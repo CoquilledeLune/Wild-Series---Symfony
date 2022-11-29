@@ -1,0 +1,21 @@
+@import "~bootstrap/scss/bootstrap";
+$primary: darken(#428bca, 20%);
+
+.navbar {
+    background-color: #765F72;
+    color: white;
+    padding: 5px;
+    margin: 0px;
+} 
+
+.navbarinside {
+    color: white;
+    padding: 5px;
+    border-radius: 10px;
+    margin: 0px;
+} 
+
+:hover.navbarinside {
+    background-color: #E9C292;
+    color: black;
+}
