@@ -4,32 +4,50 @@
 
 namespace App\Controller;
 
-
+use App\Entity\Season;
+use App\Repository\EpisodeRepository;
+use App\Repository\ProgramRepository;
+use App\Repository\SeasonRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 
 use Symfony\Component\HttpFoundation\Response;
 
 use Symfony\Component\Routing\Annotation\Route;
 
+#[Route('/program', name: 'program_')]
 class ProgramController extends AbstractController
-
 {
-    #[Route('/program/', name: 'program_index')]
-    public function index(): Response
-
+    #[Route('/', name: 'index')]
+    public function index(ProgramRepository $programRepository): Response
     {
-      return $this->render('program/index.html.twig', [
+      $programs = $programRepository->findAll();
 
-        'website' => 'Wild Series',
- 
-     ]);
+      return $this->render('program/index.html.twig', 
+        ['programs' => $programs]
+      );
     }
 
-    #[Route('/program/{id}', requirements: ['id'=>'\d+'] , methods: ['GET'], name: 'program_show')]
-    public function new(int $id): Response
+    #[Route('/{id}', requirements: ['id'=>'\d+'], methods: ['GET'], name: 'show')]
+    public function show(int $id, ProgramRepository $programRepository): Response
     
     {
-      return $this->render('program/show.html.twig', ['id' => $id]);
-      
+      $program = $programRepository->findOneBy(['id' => $id]);
+      return $this->render('program/show.html.twig', ['program' => $program]);   
     }
+
+    #[Route('/{programId}/season/{seasonId}', 
+    requirements: ['programId'=> '\w+', 'seasonId'=>'\d+'], methods: ['GET'], name: 'season_show')]
+    public function showSeason(int $programId, int $seasonId, ProgramRepository $programRepository, 
+    SeasonRepository $seasonRepository): Response
+    {
+      $programInformations = $programRepository->findOneBy(['id'=> $programId]);
+      $season = $seasonRepository->findOneBy(['id' => $seasonId]); 
+      $episodes = $season->getEpisodes();
+
+      return $this->render('program/season_show.html.twig', [
+        'season' => $season, 
+        'programInformations' => $programInformations,
+        'episodes' => $episodes,
+      ]);
+    }  
 }
