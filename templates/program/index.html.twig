@@ -4,6 +4,15 @@
 
 
 {% block body %}
+{# Messages flash #}
+    {% for category, messages in app.flashes %}
+        {% for message in messages %}
+            <div class="alert alert-{{ category }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endfor %}
+{# Fin des messages flash #}
    <h1>Toutes les séries de la table program : </h1>
    {% for program in programs %}
       <div>

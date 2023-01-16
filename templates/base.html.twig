@@ -17,14 +17,6 @@
     <body>
         {% include "program/_navbar.html.twig" %}
         {% block body %}
-        <ul>
-        {% for category in categories %}
-            <li>
-            {{ category.name }}
-            </li>
-        {% endfor %}
-
-        </ul>
         {% endblock %}
     </body>
 </html>

@@ -8,8 +8,10 @@ use App\Entity\Season;
 use App\Form\EpisodeType;
 use App\Repository\EpisodeRepository;
 use App\Repository\ProgramRepository;
+use App\Repository\SeasonRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -17,10 +19,18 @@ use Symfony\Component\Routing\Annotation\Route;
 class EpisodeController extends AbstractController
 {
     #[Route('/', name: 'app_episode_index', methods: ['GET'])]
-    public function index(EpisodeRepository $episodeRepository): Response
-    {
+    public function index(EpisodeRepository $episodeRepository, SeasonRepository $seasonRepository, RequestStack $requestStack): Response
+    { 
+        // Messages flash
+        $session = $requestStack->getSession();
+        if (!$session->has('total')) {
+          $session->set('total', 0);
+        }
+        $total = $session->get('total');
+        // Fin messages flash
         return $this->render('episode/index.html.twig', [
             'episodes' => $episodeRepository->findAll(),
+            'seasons' => $seasonRepository->findAll(),
         ]);
     }
 
@@ -34,6 +44,8 @@ class EpisodeController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $episodeRepository->save($episode, true);
+        // Put your message flash here
+        $this->addFlash('success', 'Le nouvel épisode a été créé');
 
             return $this->redirectToRoute('app_episode_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -77,6 +89,8 @@ class EpisodeController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$episode->getId(), $request->request->get('_token'))) {
             $episodeRepository->remove($episode, true);
         }
+// Message flash de suppression
+$this->addFlash('danger', 'L\'épisode a été supprimé');
 
         return $this->redirectToRoute('app_episode_index', [], Response::HTTP_SEE_OTHER);
     }

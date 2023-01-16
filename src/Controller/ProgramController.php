@@ -13,7 +13,9 @@ use App\Repository\ProgramRepository;
 use App\Repository\SeasonRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
+use Symfony\Component\HttpFoundation\Session\SessionInterface;
 
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -21,16 +23,23 @@ use Symfony\Component\Routing\Annotation\Route;
 class ProgramController extends AbstractController
 {
     #[Route('/', name: 'index')]
-    public function index(ProgramRepository $programRepository): Response
+    public function index(ProgramRepository $programRepository, RequestStack $requestStack): Response
     {
       $programs = $programRepository->findAll();
+      // Messages flash
+      $session = $requestStack->getSession();
+      if (!$session->has('total')) {
+        $session->set('total', 0);
+      }
+      $total = $session->get('total');
+      // Fin messages flash
 
       return $this->render('program/index.html.twig', 
         ['programs' => $programs]
       );
     }
 
-    #[Route('/new', name:'new')]
+    #[Route('/new', name:'new', methods: ['GET', 'POST'])]
   public function new(Request $request, ProgramRepository $programRepository): Response
     {
       $program = new Program(); 
@@ -38,12 +47,15 @@ class ProgramController extends AbstractController
       // Get data from HTTP request
       $form->handleRequest($request);
       // Was the form submitted ?
-      if ($form->isSubmitted()) {
+      if ($form->isSubmitted()&& $form->isValid()) {
         $programRepository->save($program, true); 
+        // Put your message flash here
+        $this->addFlash('success', 'La nouvelle série a été créée');
         // Redirect to categories list
         return $this->redirectToRoute('program_index');
       }
       return $this->renderForm('program/new.html.twig', [
+        'program' => $program,
         'form' => $form,
       ]);
     }

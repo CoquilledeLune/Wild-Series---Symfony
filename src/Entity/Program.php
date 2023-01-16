@@ -7,8 +7,11 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Doctrine\Common\Collections\Collection;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
+use Symfony\Component\Validator\Constraints as Assert;
+use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 #[ORM\Entity(repositoryClass: ProgramRepository::class)]
+#[UniqueEntity('title', message: 'Ce titre existe déjà')]
 class Program
 {
     #[ORM\Id]
@@ -16,14 +19,28 @@ class Program
     #[ORM\Column]
     private ?int $id = null;
 
-    #[ORM\Column(length: 255)]
+    #[ORM\Column(name: 'title', type: 'string', length: 255)]
+    #[Assert\NotBlank(message: 'Ne laisse pas ce champs vide')]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Le titre saisi {{ value }} est trop long, il ne devrait pas dépasser {{ limit }} caractères',
+        )]
     private ?string $title = null;
 
-    #[ORM\Column(type: Types::TEXT)]
+    #[ORM\Column(type: Types::TEXT, length: 255)]
+    #[Assert\NotBlank(message: 'Ne laisse pas ce champs vide')]
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Le synopsis saisi {{ value }} est trop long, il ne devrait pas dépasser {{ limit }} caractères',
+        )]
     private ?string $synopsis = null;
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $poster = null;
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Le lien de l\'image saisi {{ value }} est trop long, il ne devrait pas dépasser {{ limit }} caractères',
+        )]
 
     #[ORM\ManyToOne(inversedBy: 'programs')]
     #[ORM\JoinColumn(nullable: false)]
@@ -31,6 +48,10 @@ class Program
 
     #[ORM\Column(length: 255, nullable: true)]
     private ?string $country = null;
+    #[Assert\Length(
+        max: 255,
+        maxMessage: 'Le pays saisi {{ value }} est trop long, il ne devrait pas dépasser {{ limit }} caractères',
+        )]
 
     #[ORM\Column(nullable: true)]
     private ?int $year = null;

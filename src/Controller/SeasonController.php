@@ -9,6 +9,7 @@ use App\Repository\ProgramRepository;
 use App\Repository\SeasonRepository;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\HttpFoundation\RequestStack;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 
@@ -16,8 +17,15 @@ use Symfony\Component\Routing\Annotation\Route;
 class SeasonController extends AbstractController
 {
     #[Route('/', name: 'app_season_index', methods: ['GET'])]
-    public function index(SeasonRepository $seasonRepository): Response
+    public function index(SeasonRepository $seasonRepository, RequestStack $requestStack): Response
     {
+        // Messages flash
+      $session = $requestStack->getSession();
+      if (!$session->has('total')) {
+        $session->set('total', 0);
+      }
+      $total = $session->get('total');
+      // Fin messages flash
         return $this->render('season/index.html.twig', [
             'seasons' => $seasonRepository->findAll(),
         ]);
@@ -33,6 +41,8 @@ class SeasonController extends AbstractController
 
         if ($form->isSubmitted() && $form->isValid()) {
             $seasonRepository->save($season, true);
+        // Put your message flash here
+        $this->addFlash('success', 'La nouvelle saison a été créée');
 
             return $this->redirectToRoute('app_season_index', [], Response::HTTP_SEE_OTHER);
         }
@@ -77,6 +87,8 @@ class SeasonController extends AbstractController
         if ($this->isCsrfTokenValid('delete'.$season->getId(), $request->request->get('_token'))) {
             $seasonRepository->remove($season, true);
         }
+// Message flash de suppression
+        $this->addFlash('danger', 'La saison a été supprimée');
 
         return $this->redirectToRoute('app_season_index', [], Response::HTTP_SEE_OTHER);
     }
